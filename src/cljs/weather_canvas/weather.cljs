@@ -3,11 +3,51 @@
   (:require [fmi.metolib :as fmi]
             [goog.dom :as dom]
             [cljs.core.async :as async
-             :refer [<! >! chan close! sliding-buffer put! alts! timeout]])
+             :refer [<! >! >!! chan close! sliding-buffer put! alts! timeout]])
             (:require-macros [cljs.core.async.macros :as m :refer [go alt!]]))
 
 (def year-data      (atom {}))
 (def years-to-fetch (atom 0))
+
+(def c (chan))
+(def c-msg (chan))
+
+(go (while true
+    (do
+      (<! c-msg)
+      (<! (timeout 10))
+      (if (= @years-to-fetch 0)
+        (do (report-status "Finished.") (close! c-msg))
+        (report-status (str "Drawing, "(swap! years-to-fetch - 1) " to go "))))))
+
+(defn listen-results-async []
+  (let [size-x 4
+        size-y 16]
+    (go
+     (loop [parameters nil]
+       (if (not (nil? parameters))
+         (let [[data errors attribute offset context] ((juxt :data :errors :attribute :offset :context) parameters)]
+           (doseq [[x-coord temperature]
+                   (map list
+                      (range)
+                      (map #(.-value %)
+                           (-> data
+                               .-locations
+                               (nth 0)
+                               .-data
+                               (aget attribute)
+                               .-timeValuePairs)))]
+             (set! (.-fillStyle context)
+                 (temperature-to-color temperature gradient-black-white-2))
+
+           (.fillRect context 
+                      (* size-x x-coord) (* size-y offset)
+                      size-x             size-y)))
+         )
+       (<! (timeout 10))
+       (>! c-msg "jei")
+       (recur (<! c))))))
+
 
 (defn draw-results [data errors attribute offset context]
   (let [size-x 4 size-y 16]
@@ -24,9 +64,10 @@
       
       (set! (.-fillStyle context)
             (temperature-to-color temperature gradient-black-white-2))
+
       (.fillRect context 
                  (* size-x x-coord) (* size-y offset)
-                 size-x             size-y))))
+                    size-x             size-y))))
 
 
 (defn store-results [year data errors attribute]
@@ -38,10 +79,8 @@
                   (nth 0)
                   .-data
                   (aget attribute)
-                  .-timeValuePairs))
-               )
-              ))
-  (report-status (str (- @years-to-fetch 1) " to go, got year " year ))  
+                  .-timeValuePairs)))))
+  (report-status (str (- @years-to-fetch 1) " to go, got year " year ))
   (if (= (swap! years-to-fetch - 1) 0)
     (try (draw-stored-results @year-data) (catch js/Object e (str "Caught: " e)))))
 
@@ -184,7 +223,7 @@
         (memo-color-string
          (map + color-from
               (map #(* point-in-range %)
-                   (map - color-to color-from))))))a
+                   (map - color-to color-from))))))
 
 (defn today-minus [days]
   (let [d (js/Date.)]
@@ -235,6 +274,37 @@
         (if (.connect connection url stored-query-id)
           (.getData connection parameters))))))
 
+(defn test-2-async []
+  (swap! years-to-fetch #(- 2013 1980))
+  (listen-results-async)
+  (let [canvas  (.getElementById js/document "weather-canvas")
+        context (.getContext canvas "2d")]
+
+     (doseq [year (range 1980 2013)]
+       (let [connection      (js/fi.fmi.metoclient.metolib.WfsConnection.)
+             stored-query-id "fmi::observations::weather::daily::multipointcoverage"
+             url             "http://data.fmi.fi/fmi-apikey/9f1313c1-c123-40ad-9490-f25428b14bcf/wfs"
+             attribute       "tday"
+             parameters      (js-obj
+                              "fmisid" 100971 ; helsinki kaisaniemi
+                              "requestParameter" attribute
+                              "begin" (make-date (str year) "01" "01")
+                              "end"   (make-date (str (+ 1 year)) "01" "01")
+                              "callback" (fn [data, errors]
+                                           (go
+                                            (async/>! c {:data data :errors errors :attribute attribute :offset (- year 1980) :context context})
+                                            (.disconnect connection)
+                                            )
+
+
+
+                                           ))]
+
+         (if (.connect connection url stored-query-id)
+           (.getData connection parameters))))
+     )
+    )
+
 
 (defn test-3 []
     (swap! years-to-fetch #(- 2013 1980))
@@ -255,20 +325,12 @@
         (if (.connect connection url stored-query-id)
           (.getData connection parameters)))))
 
+
 (defn init-canvas [canvas]
     (set! (.-width canvas)  (- (.-innerWidth js/window) 50))
     (set! (.-height canvas) (- (.-innerHeight js/window) 50))
     canvas)
 
 (init-canvas (.getElementById js/document "weather-canvas"))
-;(test-2)
-;(test-3)
 
-(defn async-test []
-  (let [ch (chan)]
-    (go (while true
-          (let [v (<! ch)]
-            (println "Read: " v))))
-    (go (>! ch "hi")
-        (<! (timeout 5000))
-        (>! ch "there"))))
+(test-2-async)
