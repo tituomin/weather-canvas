@@ -1,0 +1,8 @@
+.project
+.svn
+.svn/
+.grunt/
+node_modules/
+/_SpecRunner.html
+/dest
+npm-debug.log
