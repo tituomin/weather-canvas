@@ -9,6 +9,10 @@
 (def year-data      (atom {}))
 (def years-to-fetch (atom 0))
 
+(defn report-status [message]
+  (.setTextContent js/goog.dom (.getElement js/goog.dom "status-report") message))
+
+
 (def c (chan))
 (def c-msg (chan))
 
@@ -129,8 +133,6 @@
    (report-status "Done.")))
 
 
-(defn report-status [message]
-  (.setTextContent js/goog.dom (.getElement js/goog.dom "status-report") message))
 
 (def gradient-a
   {:direction :up
@@ -332,5 +334,4 @@
     canvas)
 
 (init-canvas (.getElementById js/document "weather-canvas"))
-
-(test-2-async)
+;(test-2-async)
