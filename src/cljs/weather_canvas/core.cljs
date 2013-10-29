@@ -35,7 +35,11 @@
               form-contents (handle-form (.-target ev))]
           (<! (timeout 100))
           (dm/append! (sel1 :body) canvas)
-          (weather/test-2-async canvas (int (form-contents "year-start")) (int (form-contents "year-end")))))))
+          (weather/draw-async
+           canvas
+           (int (form-contents "year-start"))
+           (int (form-contents "year-end"))
+           (form-contents "quantity"))))))
 
 (defn handle-form [form]
   (let [id-prefix    (dm/attr form :id)

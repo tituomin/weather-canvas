@@ -7,6 +7,8 @@
              :refer [<! >! >!! chan close! sliding-buffer put! alts! timeout]])
   (:require-macros [cljs.core.async.macros :as m :refer [go alt!]]))
 
+(def api-key "9f1313c1-c123-40ad-9490-f25428b14bcf")
+
 (def year-data      (atom {}))
 (def years-to-fetch (atom 0))
 
@@ -41,11 +43,11 @@
                                .-data (aget attribute)
                                .-timeValuePairs)))]
              (set! (.-fillStyle context)
-                 (temperature-to-color temperature gradient/black-white-2))
+                   (temperature-to-color temperature gradient/black-white-2))
 
-           (.fillRect context 
-                      (* size-x x-coord) (* size-y offset)
-                      size-x             size-y))))
+             (.fillRect context 
+                        (* size-x x-coord) (* size-y offset)
+                        size-x             size-y))))
        (<! (timeout 10))
        (>! c-msg "done")
        (recur (<! c)))))
@@ -95,8 +97,7 @@
     (js/Date. (.valueOf date))))
 
 
-(defn test-2-async [canvas from to]
-  (.log js/console canvas)
+(defn draw-async [canvas from to quantity]
   (swap! years-to-fetch #(+ 1 (- to from)))
   (init-canvas canvas @years-to-fetch)
   (listen-results-async)
@@ -105,23 +106,16 @@
      (doseq [year (range from (+ 1 to))]
        (let [connection      (js/fi.fmi.metoclient.metolib.WfsConnection.)
              stored-query-id "fmi::observations::weather::daily::multipointcoverage"
-             url             "http://data.fmi.fi/fmi-apikey/9f1313c1-c123-40ad-9490-f25428b14bcf/wfs"
-             attribute       "tday"
+             url             (format "http://data.fmi.fi/fmi-apikey/%s/wfs" api-key)
              parameters      (js-obj
                               "fmisid" 100971 ; helsinki kaisaniemi
-                              "requestParameter" attribute
+                              "requestParameter" quantity
                               "begin" (make-date (str year) "01" "01")
                               "end"   (make-date (str (+ 1 year)) "01" "01")
                               "callback" (fn [data, errors]
                                            (go
-                                            (async/>! c {:data data :errors errors :attribute attribute :offset (- year from) :context context})
-                                            (.disconnect connection)
-                                            )
-
-
-
-                                           ))]
-
+                                            (async/>! c {:data data :errors errors :attribute quantity :offset (- year from) :context context})
+                                            (.disconnect connection))))]
          (if (.connect connection url stored-query-id)
            (.getData connection parameters))))))
 

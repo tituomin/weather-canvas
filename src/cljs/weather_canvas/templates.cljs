@@ -20,10 +20,13 @@
     (node [:div {:class "query-form-container"}
            [:form {:id id-prefix}
 
-            [:span {:class "form-element"}
-            [:select {:id (mk-id "focus")}
-             [:option {:value "summer"} "Kesät"]
-             [:option {:value "winter"} "Talvet"]]]
+;            [:span {:class "form-element"}
+;            [:select {:id (mk-id "focus")}
+;             [:option {:value "summer"} "Kesät"]
+;             [:option {:value "winter"} "Talvet"]]]
+
+
+            (group [
 
             (with-label "vuodesta" :select (mk-id "year-start")
               year-options)
@@ -31,8 +34,20 @@
               year-options)
             (with-label "paikassa" :input (mk-id "location")
               nil)
-            [:input {:class "submit" :type "submit" :value "Piirrä"}]
-            ]])))
+                    ])
+
+            (group [
+
+            (with-label "piirrä" :select (mk-id "quantity")
+              (for [c [[:option {:value "tday"} "keskilämpötila"]
+                       [:option {:value "tmax"} "maksimilämpötila"]
+                       [:option {:value "tmin"} "minimilämpötila"]]] c))
+
+            [:input {:class "submit" :type "submit" :value "Toteuta!"}]
+
+            ])]])))
+
+
 
 (defn group [contents]
   [:div {:class "form-grouping"}
