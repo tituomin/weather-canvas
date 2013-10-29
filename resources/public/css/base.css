@@ -3,6 +3,8 @@
 body {
   background-color: #111;
   color: #ddd;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 14px;
 }
 
 canvas#weather-canvas {
@@ -11,4 +13,17 @@ canvas#weather-canvas {
 
 #status-report {
   color: #ffffff;
+}
+
+form label {
+  padding: 0 4px;
+
+}
+
+form .form-grouping {
+  padding: 4px 0;
+}
+form input.submit {
+  padding: 0 4px;
+  margin: 0 4px;
 }
