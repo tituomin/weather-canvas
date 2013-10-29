@@ -2,6 +2,7 @@
 
 body {
   background-color: #111;
+  color: #ddd;
 }
 
 canvas#weather-canvas {

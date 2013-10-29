@@ -10,7 +10,8 @@
                  [org.clojure/core.async "0.1.242.0-44b1e3-alpha"]
                  [org.clojure/clojurescript "0.0-1878"]
                  [compojure "1.1.5"]
-                 [rm-hull/monet "0.1.8"]]
+                 [rm-hull/monet "0.1.8"]
+                 [prismatic/dommy "0.1.1"]]
 
   ;; lein-cljsbuild plugin to build a CLJS project
   :plugins [[lein-cljsbuild "0.3.3"]

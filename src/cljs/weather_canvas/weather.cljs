@@ -30,24 +30,21 @@
     (go
      (loop [parameters nil]
        (if (not (nil? parameters))
-         (let [[data errors attribute offset context] ((juxt :data :errors :attribute :offset :context) parameters)]
+         (let [[data errors attribute offset context]
+               ((juxt :data :errors :attribute :offset :context) parameters)]
            (doseq [[x-coord temperature]
                    (map list
                       (range)
                       (map #(.-value %)
-                           (-> data
-                               .-locations
-                               (nth 0)
-                               .-data
-                               (aget attribute)
+                           (-> data .-locations (nth 0)
+                               .-data (aget attribute)
                                .-timeValuePairs)))]
              (set! (.-fillStyle context)
                  (temperature-to-color temperature gradient/black-white-2))
 
            (.fillRect context 
                       (* size-x x-coord) (* size-y offset)
-                      size-x             size-y)))
-         )
+                      size-x             size-y))))
        (<! (timeout 10))
        (>! c-msg "jei")
        (recur (<! c))))))
@@ -133,5 +130,5 @@
   (set! (.-height canvas) (- (.-innerHeight js/window) 50))
   canvas)
 
-(init-canvas (.getElementById js/document "weather-canvas"))
+;(init-canvas (.getElementById js/document "weather-canvas"))
 ;(test-2-async)
