@@ -39,7 +39,8 @@
            canvas
            (int (form-contents "year-start"))
            (int (form-contents "year-end"))
-           (form-contents "quantity"))))))
+           (form-contents "quantity")
+           (= "value" (form-contents "order")))))))
 
 (defn handle-form [form]
   (let [id-prefix    (dm/attr form :id)

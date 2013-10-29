@@ -38,12 +38,16 @@
 
             (group [
 
-            (with-label "piirrä" :select (mk-id "quantity")
-              (for [c [[:option {:value "tday"} "keskilämpötila"]
-                       [:option {:value "tmax"} "maksimilämpötila"]
-                       [:option {:value "tmin"} "minimilämpötila"]]] c))
+                    (with-label "piirrä" :select (mk-id "quantity")
+                      (for [c [[:option {:value "tday"} "keskilämpötila"]
+                               [:option {:value "tmax"} "maksimilämpötila"]
+                               [:option {:value "tmin"} "minimilämpötila"]]] c))
 
-            [:input {:class "submit" :type "submit" :value "Toteuta!"}]
+                    (with-label "järjestä" :select (mk-id "order")
+                      (for [c [[:option {:value "default"} "ajan mukaan"]
+                               [:option {:value "value"} "lämpötilan mukaan"]]] c))
+
+                    [:input {:class "submit" :type "submit" :value "Toteuta!"}]
 
             ])]])))
 

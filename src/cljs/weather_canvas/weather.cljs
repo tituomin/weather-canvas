@@ -33,15 +33,16 @@
     (go
      (loop [parameters nil]
        (if (not (nil? parameters))
-         (let [[data errors attribute offset context]
-               ((juxt :data :errors :attribute :offset :context) parameters)]
+         (let [[data errors attribute offset context sorting]
+               ((juxt :data :errors :attribute :offset :context :sorting) parameters)
+               preprocess (if sorting sort identity)]
            (doseq [[x-coord temperature]
                    (map list
                       (range)
-                      (map #(.-value %)
+                      (preprocess (map #(.-value %)
                            (-> data .-locations (nth 0)
                                .-data (aget attribute)
-                               .-timeValuePairs)))]
+                               .-timeValuePairs))))]
              (set! (.-fillStyle context)
                    (temperature-to-color temperature gradient/black-white-2))
 
@@ -97,7 +98,7 @@
     (js/Date. (.valueOf date))))
 
 
-(defn draw-async [canvas from to quantity]
+(defn draw-async [canvas from to quantity sorting]
   (swap! years-to-fetch #(+ 1 (- to from)))
   (init-canvas canvas @years-to-fetch)
   (listen-results-async)
@@ -114,7 +115,7 @@
                               "end"   (make-date (str (+ 1 year)) "01" "01")
                               "callback" (fn [data, errors]
                                            (go
-                                            (async/>! c {:data data :errors errors :attribute quantity :offset (- year from) :context context})
+                                            (async/>! c {:data data :errors errors :attribute quantity :offset (- year from) :context context :sorting sorting})
                                             (.disconnect connection))))]
          (if (.connect connection url stored-query-id)
            (.getData connection parameters))))))
