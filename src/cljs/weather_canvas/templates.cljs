@@ -1,4 +1,3 @@
-
 (ns weather-canvas.templates
   (:require [dommy.core])
   (:use-macros
@@ -9,28 +8,31 @@
 (defn query-form [sequence-no]
   (let 
       [id-prefix (format "query-form-%d" sequence-no)
-       mk-id (fn [suffix] (format "%s-%s" id-prefix suffix))]
+       mk-id (fn [suffix] (format "%s-%s" id-prefix suffix))
+       year-options (for [year years]
+               [:option {:value year} year])]
 
     (node [:div {:class "query-form-container"}
            [:form {:id id-prefix}
 
-            [:label {:for (mk-id "year-start")} "Ensimmäinen vuosi"]
-            [:select {:id (mk-id "year-start") :name (mk-id "year-start")}
-             (for [year years]
-               [:option {:value year} year])]
+            (group [
+             (with-label "Vuodesta" :select (mk-id "year-start")
+               year-options)
+             (with-label "vuoteen" :select (mk-id "year-end")
+               year-options)])
 
-            [:label {:for (mk-id "year-end")} "Viimeinen vuosi"]
-            [:select {:id (mk-id "year-end") :name (mk-id "year-end")}
-             (for [year years]
-               [:option {:value year} year])]
+            (with-label "Paikka" :input (mk-id "location")
+              nil)
 
-;            [:label {:for "location"} (mk-id "Paikka") nil]
-;            [:input {:type "text ":id (mk-id "location")}]
-            (with-label :input (mk-id "location") "Paikka" nil)
+            (group [[:input {:class "submit" :type "submit" :value "Näytä vuodet"}]])
+            ]])))
 
-            [:input {:type "submit" :value "Piirrä vuodet"}]]])))
+(defn group [contents]
+  [:div {:class "form-grouping"}
+   (for [c contents] c)])
 
-(defn with-label [type id label contents]
-  [:label {:for id} label]
-  [type {:id id :name id} contents]
-  )
+(defn with-label [label type id contents]
+  [:span {:class "form-element"}
+   [:label {:for id} label]
+   [type {:id id :name id} contents]])
+
