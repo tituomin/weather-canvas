@@ -123,13 +123,10 @@
                                            ))]
 
          (if (.connect connection url stored-query-id)
-           (.getData connection parameters))))
-     )
-    )
+           (.getData connection parameters))))))
 
 
 (defn init-canvas [canvas years]
   (set! (.-width canvas)  (* 370 size-x))
   (set! (.-height canvas) (* years size-y))
   canvas)
-
