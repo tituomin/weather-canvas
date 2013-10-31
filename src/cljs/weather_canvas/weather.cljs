@@ -38,11 +38,11 @@
                preprocess (if sorting sort identity)]
            (doseq [[x-coord temperature]
                    (map list
-                      (range)
-                      (preprocess (map #(.-value %)
-                           (-> data .-locations (nth 0)
-                               .-data (aget attribute)
-                               .-timeValuePairs))))]
+                    (range)
+                    (preprocess (map #(.-value %)
+                                     (-> data .-locations (nth 0)
+                                         .-data (aget attribute)
+                                         .-timeValuePairs))))]
              (set! (.-fillStyle context)
                    (temperature-to-color temperature gradient/black-white-2))
 
