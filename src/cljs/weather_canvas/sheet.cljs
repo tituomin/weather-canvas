@@ -7,13 +7,11 @@
   (:use-macros
    [dommy.macros :only [node sel sel1]]))
 
-(defmulti draw! (fn [shape context offset] (:type shape)))
+(defmulti draw! (fn [shape context offset & {:keys []}] (:type shape)))
 
 (defn sheet [layers]
-  {:type :sheet :layers layers})
-
-(defn layer [name groups]
-  {:type :layer :name name :groups groups})
+  {:type   :sheet
+   :layers layers})
 
 (defn group
   [direction & {:keys [interleave content]}]
@@ -29,7 +27,7 @@
         [ 0  1]]
        (mod direction 4)))
 
-(def direction-num
+(def direction
   { :right 0
     :up    1
     :left  2
@@ -40,11 +38,19 @@
     (map * (unit-vector direction)
          dimension)))
 
+;; (defn rotate [shapes quarters]
+;;   (if (empty? shapes)
+;;     nil
+;;     )
+
+(defmethod draw! :sheet [sheet context offset]
+  (doseq [[layer-name contents] (reverse (:layers sheet))]
+    (draw! contents context offset)))
+
 (defmethod draw! :group [shape context offset]
-  ; todo return dimensions
-  (let [direction (direction-num (:direction shape))
-        forward   (make-projection direction)
-        sideways  (fn [dim] (map #(.abs js/Math %) ((make-projection (+ 1 direction)) dim)))
+  (let [dir      (:direction shape)
+        forward   (make-projection dir)
+        sideways  (fn [dim] (map #(.abs js/Math %) ((make-projection (+ 1 dir)) dim)))
         between   (:interleave shape)
         contents  (if (not between)
                     (:content shape)
@@ -54,17 +60,17 @@
                            (:content shape)
                            (repeat between)))))]
 
-    (loop [subshapes contents
-           suboffset offset
+    (loop [subshapes  contents
+           suboffset  offset
            dimensions [0 0]]
 
       (if (not (first subshapes))
         dimensions
         (let [sub-dimension (draw! (first subshapes)
-                                  context
-                                  suboffset)
+                                   context
+                                   suboffset)
               new-width     (max (sideways sub-dimension)
-                                     (sideways dimensions))]
+                                 (sideways dimensions))]
           (recur (rest subshapes)
                  (map + (forward sub-dimension) suboffset)
                  (map + (forward dimensions)    new-width)))))))
