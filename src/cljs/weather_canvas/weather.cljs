@@ -5,15 +5,13 @@
             [weather-canvas.gradient :as gradient]
             [cljs.core.async :as async
              :refer [<! >! >!! chan close! sliding-buffer put! alts! timeout]])
+  (:use     [weather-canvas.canvas-buffer :only [init-canvas]])
   (:require-macros [cljs.core.async.macros :as m :refer [go alt!]]))
 
 (def api-key "9f1313c1-c123-40ad-9490-f25428b14bcf")
 
 (def year-data      (atom {}))
 (def years-to-fetch (atom 0))
-
-(def size-x 4)
-(def size-y 16)
 
 (defn report-status [message]
   (.setTextContent js/goog.dom (.getElement js/goog.dom "status-report") message))
@@ -23,7 +21,7 @@
 
 (go (while true
     (do
-      (<! (timeout 10))
+      (<! (timeout 5))
       (<! c-msg)
       (if (= @years-to-fetch 0)
         (do (report-status "Finished.") (close! c-msg))
@@ -130,10 +128,3 @@
          (if (.connect connection url stored-query-id)
            (.getData connection parameters))))))
 
-
-(defn init-canvas [canvas years]
-  (set! (.-width canvas)  (* 370 size-x))
-  (set! (.-height canvas) (* years size-y))
-  canvas)
-
-;; <swe:field name="rrday" xlink:href="http://data.fmi.fi/fmi-apikey/9f1313c1-c123-40ad-9490-f25428b14bcf/meta?observableProperty=observation&param=rrday&language=eng"/><swe:field name="tday" xlink:href="http://data.fmi.fi/fmi-apikey/9f1313c1-c123-40ad-9490-f25428b14bcf/meta?observableProperty=observation&param=tday&language=eng"/><swe:field name="snow" xlink:href="http://data.fmi.fi/fmi-apikey/9f1313c1-c123-40ad-9490-f25428b14bcf/meta?observableProperty=observation&param=snow&language=eng"/><swe:field name="tmin" xlink:href="http://data.fmi.fi/fmi-apikey/9f1313c1-c123-40ad-9490-f25428b14bcf/meta?observableProperty=observation&param=tmin&language=eng"/><swe:field name="tmax" xlink:href="http://data.fmi.fi/fmi-apikey/9f1313c1-c123-40ad-9490-f25428b14bcf/meta?observableProperty=observation&param=tmax&language=eng"/>

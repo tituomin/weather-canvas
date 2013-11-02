@@ -2,6 +2,7 @@
 (ns weather-canvas.sheet
   (:require [weather-canvas.gradient :as gradients]
             [weather-canvas.weather :as weather]
+            [weather-canvas.canvas-buffer :as cb]
             [dommy.utils :as utils]
             [dommy.core :as dommy])
   (:use-macros
@@ -11,6 +12,7 @@
 
 (defn sheet [layer-specs]
   {:type   :sheet
+;   :buffer canvas-buffer
    :layers layer-specs})
 
 (defn group
@@ -21,21 +23,25 @@
    :content content})
 
 (defn gap
-  [size] {:type :gap :size size})
+  [size] {:type :gap :size [size size]})
 
 (defn square
-  [size color] {:type :square :size size :color color})
+  [size color] {:type :square :size [size size] :color color})
+
+(defn text
+  [contents size color] {:type :text :string contents :font-size size :color color})
 
 ; ----------------------------------------------------------------------
 
-(defmulti draw! (fn [shape context offset & {:keys []}] (:type shape)))
 
-(defmethod draw! :sheet [sheet context offset]
+(defmulti draw! (fn [shape canvas-buffer offset & {:keys []}] (:type shape)))
+
+(defmethod draw! :sheet [sheet buffer offset]
   (let [subdimensions (for [[layer-name sub-offset contents] (reverse (:layers sheet))]
-                        (draw! contents context (map + sub-offset offset)))]
+                        (draw! contents buffer (map + sub-offset offset)))]
     (apply map max subdimensions)))
 
-(defmethod draw! :group [shape context offset]
+(defmethod draw! :group [shape buffer offset]
   (let [dir       (:direction shape)
         forward   (make-projection dir)
         sideways  (fn [dim] (map #(.abs js/Math %) ((make-projection (+ 1 dir)) dim)))
@@ -51,11 +57,11 @@
     (loop [subshapes  contents
            suboffset  offset
            dimensions [0 0]]
-
+      
       (if (not (first subshapes))
         dimensions
         (let [sub-dimension (draw! (first subshapes)
-                                   context
+                                   buffer
                                    suboffset)
               new-width     (max (sideways sub-dimension)
                                  (sideways dimensions))]
@@ -65,15 +71,21 @@
                       (map + (forward sub-dimension) new-width))))))))
 
 
-(defmethod draw! :gap [shape context offset]
-  ; don't draw! anything, just return dimensions
-  [(:size shape) (:size shape)])
+(defmethod draw! :text [shape buffer offset]
+  (cb/draw-text buffer (:string shape) offset (:font-size shape) (:color shape)))
 
-(defmethod draw! :square [shape context offset]
-  (set! (.-fillStyle context) (:color shape))
-  (.fillRect context (first offset) (second offset) (:size shape) (:size shape))
-  [(:size shape) (:size shape)])
+(defmethod draw! :gap [shape buffer offset]
+  ; don't draw anything, just return dimensions
+  (:size shape))
 
+(defmethod draw! :square [shape buffer offset]
+  (cb/draw-rectangle buffer offset (:size shape) (:color shape))
+  (:size shape))
+
+
+                                       ;  (set! (.-fillStyle context) (:color shape))
+;  (.fillRect context (first offset) (second offset) (:size shape) (:size shape))
+;  (:size shape)))
 ; ----------------------------------------------------------------------
 
 (defn unit-vector [direction]
