@@ -1,7 +1,6 @@
 
 (ns weather-canvas.sheet
   (:require [weather-canvas.gradient :as gradients]
-            [weather-canvas.weather :as weather]
             [weather-canvas.canvas-buffer :as cb]
             [dommy.utils :as utils]
             [dommy.core :as dommy])
@@ -18,6 +17,8 @@
 (defn group
   [direction & {:keys [interleave content offset]}]
   {:type :group
+   :drawn false
+   :dimensions []
    :direction (make-direction direction)
    :interleave interleave
    :content content})
@@ -42,6 +43,7 @@
     (apply map max subdimensions)))
 
 (defmethod draw! :group [shape buffer offset]
+  (if (:drawn shape) (:dimensions shape))
   (let [dir       (:direction shape)
         forward   (make-projection dir)
         sideways  (fn [dim] (map #(.abs js/Math %) ((make-projection (+ 1 dir)) dim)))
@@ -59,7 +61,7 @@
            dimensions [0 0]]
       
       (if (not (first subshapes))
-        dimensions
+        (:dimensions (assoc shape :dimensions dimensions :drawn true))
         (let [sub-dimension (draw! (first subshapes)
                                    buffer
                                    suboffset)

@@ -35,7 +35,7 @@
               form-contents (handle-form (.-target ev))]
           (<! (timeout 100))
           (dm/append! (sel1 :body) canvas)
-          (weather/draw-async
+          (weather/draw-async-sheet
            canvas
            (int (form-contents "year-start"))
            (int (form-contents "year-end"))
