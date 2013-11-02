@@ -41,7 +41,10 @@
                     (with-label "piirrä" :select (mk-id "quantity")
                       (for [c [[:option {:value "tday"} "keskilämpötila"]
                                [:option {:value "tmax"} "maksimilämpötila"]
-                               [:option {:value "tmin"} "minimilämpötila"]]] c))
+                               [:option {:value "tmin"} "minimilämpötila"]
+                               [:option {:value "rrday"} "sademäärä"]
+                               [:option {:value "snow"} "lumensyvyys"]
+                               ]] c))
 
                     (with-label "järjestä" :select (mk-id "order")
                       (for [c [[:option {:value "default"} "ajan mukaan"]

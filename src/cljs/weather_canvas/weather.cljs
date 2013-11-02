@@ -23,8 +23,8 @@
 
 (go (while true
     (do
-      (<! c-msg)
       (<! (timeout 10))
+      (<! c-msg)
       (if (= @years-to-fetch 0)
         (do (report-status "Finished.") (close! c-msg))
         (report-status (str "Drawing, "(swap! years-to-fetch - 1) " to go "))))))
@@ -33,8 +33,7 @@
     (go
      (loop [parameters nil]
        (if (not (nil? parameters))
-         (let [[data errors attribute offset context sorting]
-               ((juxt :data :errors :attribute :offset :context :sorting) parameters)
+         (let [{:keys [data errors attribute offset context sorting]} parameters
                preprocess (if sorting sort identity)]
            (doseq [[x-coord temperature]
                    (map list
@@ -49,7 +48,18 @@
              (.fillRect context 
                         (* size-x x-coord) (* size-y offset)
                         size-x             size-y))))
+       (>! c-msg "done")
        (<! (timeout 10))
+       (recur (<! c)))))
+
+(defn listen-results-async-fake []
+    (go
+     (loop [parameters nil]
+       (if (not (nil? parameters))
+         (let [{:keys [data errors attribute offset context sorting]} parameters
+               preprocess (if sorting sort identity)]
+           (.log js/console (-> data .-locations (nth 0) .-data))))
+       (<! (timeout 20))
        (>! c-msg "done")
        (recur (<! c)))))
 
@@ -110,7 +120,7 @@
              url             (format "http://data.fmi.fi/fmi-apikey/%s/wfs" api-key)
              parameters      (js-obj
                               "fmisid" 100971 ; helsinki kaisaniemi
-                              "requestParameter" quantity
+                              "requestParameter" "rrday,tday,snow,tmin,tmax"
                               "begin" (make-date (str year) "01" "01")
                               "end"   (make-date (str (+ 1 year)) "01" "01")
                               "callback" (fn [data, errors]
@@ -125,3 +135,5 @@
   (set! (.-width canvas)  (* 370 size-x))
   (set! (.-height canvas) (* years size-y))
   canvas)
+
+;; <swe:field name="rrday" xlink:href="http://data.fmi.fi/fmi-apikey/9f1313c1-c123-40ad-9490-f25428b14bcf/meta?observableProperty=observation&param=rrday&language=eng"/><swe:field name="tday" xlink:href="http://data.fmi.fi/fmi-apikey/9f1313c1-c123-40ad-9490-f25428b14bcf/meta?observableProperty=observation&param=tday&language=eng"/><swe:field name="snow" xlink:href="http://data.fmi.fi/fmi-apikey/9f1313c1-c123-40ad-9490-f25428b14bcf/meta?observableProperty=observation&param=snow&language=eng"/><swe:field name="tmin" xlink:href="http://data.fmi.fi/fmi-apikey/9f1313c1-c123-40ad-9490-f25428b14bcf/meta?observableProperty=observation&param=tmin&language=eng"/><swe:field name="tmax" xlink:href="http://data.fmi.fi/fmi-apikey/9f1313c1-c123-40ad-9490-f25428b14bcf/meta?observableProperty=observation&param=tmax&language=eng"/>
