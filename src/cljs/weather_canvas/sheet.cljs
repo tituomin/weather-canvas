@@ -7,48 +7,36 @@
   (:use-macros
    [dommy.macros :only [node sel sel1]]))
 
-(defmulti draw! (fn [shape context offset & {:keys []}] (:type shape)))
+; ----------------------------------------------------------------------
 
-(defn sheet [layers]
+(defn sheet [layer-specs]
   {:type   :sheet
-   :layers layers})
+   :layers layer-specs})
 
 (defn group
-  [direction & {:keys [interleave content]}]
+  [direction & {:keys [interleave content offset]}]
   {:type :group
-   :direction direction
+   :direction (make-direction direction)
    :interleave interleave
    :content content})
 
-(defn unit-vector [direction]
-  (get [[ 1  0]
-        [ 0 -1]
-        [-1  0]
-        [ 0  1]]
-       (mod direction 4)))
+(defn gap
+  [size] {:type :gap :size size})
 
-(def direction
-  { :right 0
-    :up    1
-    :left  2
-    :down  3 })
+(defn square
+  [size color] {:type :square :size size :color color})
 
-(defn make-projection [direction]
-  (fn [dimension]
-    (map * (unit-vector direction)
-         dimension)))
+; ----------------------------------------------------------------------
 
-;; (defn rotate [shapes quarters]
-;;   (if (empty? shapes)
-;;     nil
-;;     )
+(defmulti draw! (fn [shape context offset & {:keys []}] (:type shape)))
 
 (defmethod draw! :sheet [sheet context offset]
-  (doseq [[layer-name contents] (reverse (:layers sheet))]
-    (draw! contents context offset)))
+  (let [subdimensions (for [[layer-name sub-offset contents] (reverse (:layers sheet))]
+                        (draw! contents context (map + sub-offset offset)))]
+    (apply map max subdimensions)))
 
 (defmethod draw! :group [shape context offset]
-  (let [dir      (:direction shape)
+  (let [dir       (:direction shape)
         forward   (make-projection dir)
         sideways  (fn [dim] (map #(.abs js/Math %) ((make-projection (+ 1 dir)) dim)))
         between   (:interleave shape)
@@ -73,21 +61,35 @@
                                  (sideways dimensions))]
           (recur (rest subshapes)
                  (map + (forward sub-dimension) suboffset)
-                 (map + (forward dimensions)    new-width)))))))
+                 (map + (forward dimensions)
+                      (map + (forward sub-dimension) new-width))))))))
 
-(defn gap
-  [size] {:type :gap :size size})
 
 (defmethod draw! :gap [shape context offset]
   ; don't draw! anything, just return dimensions
   [(:size shape) (:size shape)])
-
-
-(defn square
-  [size color] {:type :square :size size :color color})
 
 (defmethod draw! :square [shape context offset]
   (set! (.-fillStyle context) (:color shape))
   (.fillRect context (first offset) (second offset) (:size shape) (:size shape))
   [(:size shape) (:size shape)])
 
+; ----------------------------------------------------------------------
+
+(defn unit-vector [direction]
+  (get [[ 1  0]
+        [ 0 -1]
+        [-1  0]
+        [ 0  1]]
+       (mod direction 4)))
+
+(def make-direction
+  { :right 0
+    :up    1
+    :left  2
+    :down  3 })
+
+(defn make-projection [direction]
+  (fn [dimension]
+    (map * (unit-vector direction)
+         dimension)))
