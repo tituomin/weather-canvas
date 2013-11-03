@@ -2,7 +2,7 @@
   (:use-macros
    [dommy.macros :only [node sel sel1]]))
 
-(def size-x 4)
+(def size-x 3)
 (def size-y 16)
 
 (defn canvas-buffer [buffer-id]
@@ -11,7 +11,7 @@
      :context (.getContext canvas "2d")}))
 
 (defn init-canvas [canvas years]
-  (set! (.-width canvas) (* 370 size-x))
+  (set! (.-width canvas) (* 366 size-x))
   (set! (.-height canvas) (* years size-y)))
 
 (defn draw-rectangle [buffer position dimensions color]

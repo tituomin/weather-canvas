@@ -22,6 +22,22 @@
                (put! c ev)))
     c))
 
+(def days-in-month
+  ; month zero indexed
+  [31
+         29 ; note: non-leap years are modified for uniformity
+         31
+         30
+         31
+         30
+         31
+         31
+         30
+         31
+         30
+         31])
+  
+
 (defn init-ui []
   (let [submit-form
         (sel1 (dm/append! (sel1 [:body :.form-wrapper]) (templates/query-form 1)) :form)
@@ -38,17 +54,26 @@
     (go (while true
           (let [ev (<! submit-channel)
                 form-contents (handle-form (.-target ev))
+                year-start              (int (form-contents "year-start"))
+                year-end             (int (form-contents "year-end"))
                 top-headers (sel1 [:body :.headers-top])]
             (<! (timeout 100))
             (dm/append! (sel1 [:body :.canvas-wrapper]) canvas)
 
-            (doseq [m (sel top-headers :.month)]
-              (.log js/console))
+            (doseq [[month width] (map list (sel top-headers :.month) days-in-month)]
+;              (.log js/console m)
+              (dm/set-attr! month :style (format "width: %spx;" (- (* size-x width) 21))))
+
             (dm/remove-class! top-headers "hidden")
+            (let [headers-right (sel1 :.headers-right)]
+              (dm/replace-contents! headers-right (node [:div]))
+              (doseq [year (range year-start (+ 1 year-end))]
+                (dm/append! headers-right (node [:div {:class "year"} year]))))
+
             (weather/draw-async
              canvas
-             (int (form-contents "year-start"))
-             (int (form-contents "year-end"))
+             year-start
+             (if (< year-end year-start) year-start year-end)
              (obspoints/name-to-id (form-contents "location"))
              (form-contents "quantity")
              (= "value" (form-contents "order"))))))

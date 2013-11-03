@@ -23,6 +23,7 @@
         dispatch        #(if % dm/add-class! dm/remove-class!)
         man-ready       (dispatch ready)
         man-processing  (dispatch (not ready))]
+;    (.log js/console man-processing)
     (man-processing  status-report "processing")
     (man-ready       status-report "ready")))
 
@@ -47,13 +48,14 @@
     (do
       (<! (timeout 5))
       (<! c-msg)
-      (if (= @years-to-fetch 0)
-        (do (report-status true) (close! c-msg))
+      (if (<= @years-to-fetch 0)
+        (report-status true)
         (report-status false)))))
 
 (defn listen-results-async []
     (go
      (loop [parameters nil]
+       (swap! years-to-fetch #(- % 1))
        (if (not (nil? parameters))
          (let [{:keys [data errors attribute offset context sorting year]} parameters
                preprocess (if sorting sort identity)
@@ -63,14 +65,10 @@
                                          .-timeValuePairs)))
                jan-and-feb (+ 31 28)
                uniform-days (if (not (leap-year year))
-                              (concat (conj (take jan-and-feb days)
-                                            (get days (- jan-and-feb-days 1)))
+                              (concat (concat (take jan-and-feb days)
+                                              [(nth days (- jan-and-feb 1))])
                                       (drop jan-and-feb days))
                               days)]
-           (if (leap-year year)
-             (.log js/console (str "leap year " year)))
-           (.log js/console (count days))
-           (.log js/console (count uniform-days))
            (doseq [[x-coord temperature]
                    (map list (range) uniform-days)]
              (set! (.-fillStyle context)
@@ -81,31 +79,33 @@
                         size-x             size-y))))
        (>! c-msg "done")
        (<! (timeout 10))
-       (recur (<! c)))))
+       (recur (<! c))
+       )
+     (>! c-msg "done")))
 
-(defn listen-results-async-sheet []
-    (go
-     (loop [parameters nil]
-       (if (not (nil? parameters))
-         (let [{:keys [data errors attribute offset context sorting]} parameters
-               preprocess (if sorting sort identity)]
-           (swap! main-group assoc-in
-                  [:content offset]
-                  (group :right :interleave (gap 1)
-                         :content
-                         (for [temperature
-                               (preprocess (map #(.-value %)
-                                                (-> data
-                                                    .-locations (nth 0)
-                                                    .-data (aget attribute)
-                                                    .-timeValuePairs)))]
-                           (square 2 (temperature-to-color
-                                      temperature
-                                      gradient/black-white-2)))))))
+;; (defn listen-results-async-sheet []
+;;     (go
+;;      (loop [parameters nil]
+;;        (if (not (nil? parameters))
+;;          (let [{:keys [data errors attribute offset context sorting]} parameters
+;;                preprocess (if sorting sort identity)]
+;;            (swap! main-group assoc-in
+;;                   [:content offset]
+;;                   (group :right :interleave (gap 1)
+;;                          :content
+;;                          (for [temperature
+;;                                (preprocess (map #(.-value %)
+;;                                                 (-> data
+;;                                                     .-locations (nth 0)
+;;                                                     .-data (aget attribute)
+;;                                                     .-timeValuePairs)))]
+;;                            (square 2 (temperature-to-color
+;;                                       temperature
+;;                                       gradient/black-white-2)))))))
 
-       (>! c-msg "done")
-       (<! (timeout 10))
-       (recur (<! c)))))
+;;        (>! c-msg "done")
+;;        (<! (timeout 10))
+;;        (recur (<! c)))))
 
 (defn listen-results-async-fake []
     (go
@@ -113,11 +113,10 @@
        (if (not (nil? parameters))
          (let [{:keys [data errors attribute offset context sorting]} parameters
                preprocess (if sorting sort identity)]
-           (.log js/console (-> data .-locations (nth 0) .-data))))
+))
        (<! (timeout 20))
        (>! c-msg "done")
        (recur (<! c)))))
-
 
 (defn in-range [point segment]
   (let [range (:range segment)]
@@ -178,37 +177,39 @@
                                "fmisid" location-id ; helsinki kaisaniemi
                                "requestParameter" "rrday,tday,snow,tmin,tmax"
                                "begin" (make-date (str year) "01" "01")
-                               "end"   (make-date (str (+ 1 year)) "01" "01")
+                               "end"   (make-date (str year) "12" "31")
                                "callback" (fn [data, errors]
-                                            (go
-                                             (async/>! c {:data data :errors errors :attribute quantity :offset (- year from) :year year :context context :sorting sorting})
-                                             (.disconnect connection))))]
+                                            (if data
+                                              (go
+                                               (async/>! c {:data data :errors errors :attribute quantity :offset (- year from) :year year :context context :sorting sorting})
+                                             (.disconnect connection))                                              )
+))]
           (if (.connect connection url stored-query-id)
             (.getData connection parameters)))))))
 
-(defn draw-async-sheet [canvas from to quantity sorting]
-  (let [years (+ 1 (- to from))]
-    (.log js/console years)
-    (reset! years-to-fetch years)
-    (reset! main-group 
-            (group :down :interleave (gap 1)
-                   :content (apply vector (take years
-                                  (repeat (square size-y "#666666"))))))
+;; (defn draw-async-sheet [canvas from to quantity sorting]
+;;   (let [years (+ 1 (- to from))]
+;;     (.log js/console years)
+;;     (reset! years-to-fetch years)
+;;     (reset! main-group 
+;;             (group :down :interleave (gap 1)
+;;                    :content (apply vector (take years
+;;                                   (repeat (square size-y "#666666"))))))
   
-    (listen-results-async-sheet)
-    (doseq [year (range from (+ 1 to))]
-      (let [connection      (js/fi.fmi.metoclient.metolib.WfsConnection.)
-            stored-query-id "fmi::observations::weather::daily::multipointcoverage"
-            url             (format "http://data.fmi.fi/fmi-apikey/%s/wfs" api-key)
-            parameters      (js-obj
-                             "fmisid" 100971 ; helsinki kaisaniemi
-                             "requestParameter" "rrday,tday,snow,tmin,tmax"
-                             "begin" (make-date (str year) "01" "01")
-                             "end"   (make-date (str (+ 1 year)) "01" "01")
-                             "callback" (fn [data, errors]
-                                          (go
-                                           (async/>! c {:data data :errors errors :attribute quantity :offset (- year from) :context nil :sorting sorting})
-                                           (.disconnect connection))))]
-        (if (.connect connection url stored-query-id)
-          (.getData connection parameters))))))
+;;     (listen-results-async-sheet)
+;;     (doseq [year (range from (+ 1 to))]
+;;       (let [connection      (js/fi.fmi.metoclient.metolib.WfsConnection.)
+;;             stored-query-id "fmi::observations::weather::daily::multipointcoverage"
+;;             url             (format "http://data.fmi.fi/fmi-apikey/%s/wfs" api-key)
+;;             parameters      (js-obj
+;;                              "fmisid" 100971 ; helsinki kaisaniemi
+;;                              "requestParameter" "rrday,tday,snow,tmin,tmax"
+;;                              "begin" (make-date (str year) "01" "01")
+;;                              "end"   (make-date (str year) "12" "31")
+;;                              "callback" (fn [data, errors]
+;;                                           (go
+;;                                            (async/>! c {:data data :errors errors :attribute quantity :offset (- year from) :context nil :sorting sorting})
+;;                                            (.disconnect connection))))]
+;;         (if (.connect connection url stored-query-id)
+;;           (.getData connection parameters))))))
 

@@ -14,8 +14,21 @@
   (let 
       [id-prefix (format "query-form-%d" sequence-no)
        mk-id     (id-generator id-prefix)
-       year-options (for [year years]
-               [:option {:value year} year])]
+       year-options-2 (for [year years]
+                      (if (= 2010 year)
+                        [:option {:value year :selected "selected"} year]
+                        [:option {:value year} year]
+
+                        )
+                      )
+
+       year-options-1 (for [year years]
+                        [:option {:value year} year]
+
+                        )
+                      
+
+]
 
     (node [:div {:class "query-form-container"}
            [:form {:id id-prefix :autocomplete "off"}
@@ -28,9 +41,9 @@
 
             (group [
 
-            (with-label "vuodesta" :select (mk-id "year-start") (conj year-options (node [:option {:value -1} "valitse"])) {:class "year" :data-bound "start"}
+            (with-label "vuodesta" :select (mk-id "year-start") (conj year-options-1 (node [:option {:value -1 :selected "selected"} "valitse"])) {:class "year" :data-bound "start"}
               )
-            (with-label "vuoteen" :select (mk-id "year-end") year-options {:class "year" :data-bound "end"}
+            (with-label "vuoteen" :select (mk-id "year-end") year-options-2 {:class "year" :data-bound "end"}
               )
             (with-label "paikassa" :input (mk-id "location")
               nil {:autocomplete "off" :type "text"})

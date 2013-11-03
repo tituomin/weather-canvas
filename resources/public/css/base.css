@@ -11,6 +11,12 @@ body {
 
 #status-report {
   color: #ffffff;
+  width: 18px;
+  height: 18px;
+}
+
+#status-report.processing {
+  background-image: url("../images/ajax-loader.gif");
 }
 
 form label {
@@ -20,18 +26,32 @@ form label {
 
 .headers-top {
   margin-top: 40px;
-  width: 1600px;
 }
 
 .headers-top.hidden {
   display: none; 
 }
 
+.inner-wrapper {
+  float: left;
+}
+
+.headers-right {
+  margin-top: 69px;
+  float: left;
+  height: 1000px;
+}
+
+.headers-right .year {
+  padding-left: 5px;
+  line-height: 16px;
+  font-size: 12px;
+}
 
 .month {
   float:left;
   font-size: 10px;
-  width: 100px;
+  margin-bottom: 1px;
   padding: 10px 10px 4px 10px;
   text-transform: uppercase;
   border-right: 1px solid;

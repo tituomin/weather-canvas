@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Weather Report</title>
+    <title>Menneisyyden sää</title>
     <!--[if lt IE 9]>
     <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="css/base.css"></link>
 </head>
 <body>
-    <h1>Vuosien kirjo</h1>
+    <h1>Menneisyyden sää</h1>
     <p>Valitse sinua kiinnostavat vuodet valikosta ja
         haluamasi sijainti Suomesta,<br />
         niin väritän vuosien jokaisen päivän sen mukaan, millainen sää
@@ -28,27 +28,33 @@
     <div class="sequence-wrapper">
         <div class="form-wrapper"></div>
 
-        <div class="headers-top hidden">
-            <div class="month">tammi</div>
-            <div class="month">helmi</div>
-            <div class="month">maalis</div>
-            <div class="month">huhti</div>
-            <div class="month">touko</div>
-            <div class="month">kesä</div>
-            <div class="month">heinä</div>
-            <div class="month">elo</div>
-            <div class="month">syys</div>
-            <div class="month">loka</div>
-            <div class="month">marras</div>
-            <div class="month">joulu</div>
+        <div class="inner-wrapper">
+            <div class="headers-top hidden">
+                <div class="month">tammi</div>
+                <div class="month">helmi</div>
+                <div class="month">maalis</div>
+                <div class="month">huhti</div>
+                <div class="month">touko</div>
+                <div class="month">kesä</div>
+                <div class="month">heinä</div>
+                <div class="month">elo</div>
+                <div class="month">syys</div>
+                <div class="month">loka</div>
+                <div class="month">marras</div>
+                <div class="month">joulu</div>
+            </div>
+
+
+            <div class="canvas-wrapper"></div>
+        </div>
+        <div class="headers-right">
+            <div class="year"></div>
         </div>
 
-        <div class="canvas-wrapper"></div>
-        <div class="headers-right">
-            <div class="year">
-        </div>
+
     </div>
-    
+
+   
 
     <!-- pointing to cljsbuild generated js file -->
     <script src="js/weather.js"></script>
