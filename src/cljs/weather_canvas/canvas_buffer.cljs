@@ -25,5 +25,4 @@
     (set! (.-fillStyle ctx) color)
     (set! (.-font ctx) (str font-size "px Arial"))
     (.fillText ctx text (first position) (second position))
-    [(.-width (.measureText ctx text)) font-size]
-    ))
+    [(.-width (.measureText ctx text)) font-size]))

@@ -15,6 +15,7 @@ closure
 /coreadvanced.js
 /coresimple.js
 /out
+/repl
 /pom.xml
 .repl
 *.swp

@@ -29,7 +29,7 @@
 
                 ;; Google Closure (CLS) options configuration
                 :compiler {;; CLS generated JS script filename
-                           :output-to "resources/public/js/weather.js"
+                           :output-to "resources/public/js/weather-production.js"
 
                            ;; minimal JS optimization directive
                            :optimizations :whitespace
