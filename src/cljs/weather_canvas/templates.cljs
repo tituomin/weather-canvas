@@ -28,7 +28,7 @@
 
             (group [
 
-            (with-label "vuodesta" :select (mk-id "year-start") year-options {:class "year" :data-bound "start"}
+            (with-label "vuodesta" :select (mk-id "year-start") (conj year-options (node [:option {:value -1} "valitse"])) {:class "year" :data-bound "start"}
               )
             (with-label "vuoteen" :select (mk-id "year-end") year-options {:class "year" :data-bound "end"}
               )
@@ -48,7 +48,7 @@
 
                     (with-label "järjestä" :select (mk-id "order")
                       (for [c [[:option {:value "default"} "ajan mukaan"]
-                               [:option {:value "value"} "lämpötilan mukaan"]]] c))
+                               [:option {:value "value"} "mittausarvon mukaan"]]] c))
 
                     [:input {:class "submit" :type "submit" :value "Toteuta!"}]
 

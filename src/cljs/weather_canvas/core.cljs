@@ -9,6 +9,7 @@
    [cljs.core.async :as async
     :refer [<! >! >!! chan close! sliding-buffer put! alts! timeout]]
    [dommy.core :as dm])
+  (:use     [weather-canvas.canvas-buffer :only [init-canvas size-x size-y]])
   (:use-macros
    [dommy.macros :only [node sel sel1]])
   (:require-macros [cljs.core.async.macros :as m :refer [go alt!]]))
@@ -36,10 +37,14 @@
         ]
     (go (while true
           (let [ev (<! submit-channel)
-                form-contents (handle-form (.-target ev))]
+                form-contents (handle-form (.-target ev))
+                top-headers (sel1 [:body :.headers-top])]
             (<! (timeout 100))
             (dm/append! (sel1 [:body :.canvas-wrapper]) canvas)
-            (dm/remove-class! (sel1 [:body :.headers-top]) "hidden")
+
+            (doseq [m (sel top-headers :.month)]
+              (.log js/console))
+            (dm/remove-class! top-headers "hidden")
             (weather/draw-async
              canvas
              (int (form-contents "year-start"))

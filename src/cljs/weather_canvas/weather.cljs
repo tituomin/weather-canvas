@@ -1,12 +1,14 @@
 
 (ns weather-canvas.weather
   (:require [fmi.metolib :as fmi]
-            [goog.dom :as dom]
+            [dommy.core :as dm]
             [weather-canvas.gradient :as gradient]
             [cljs.core.async :as async
              :refer [<! >! >!! chan close! sliding-buffer put! alts! timeout]])
   (:use     [weather-canvas.canvas-buffer :only [init-canvas size-x size-y]]
             [weather-canvas.sheet :only [sheet gap group square]])
+  (:use-macros
+   [dommy.macros :only [node sel sel1]])
   (:require-macros [cljs.core.async.macros :as m :refer [go alt!]]))
 
 (def api-key "9f1313c1-c123-40ad-9490-f25428b14bcf")
@@ -16,8 +18,27 @@
 
 (def main-group (atom nil))
 
-(defn report-status [message]
-  (.setTextContent js/goog.dom (.getElement js/goog.dom "status-report") message))
+(defn report-status [ready]
+  (let [status-report (sel1 :#status-report)
+        dispatch        #(if % dm/add-class! dm/remove-class!)
+        man-ready       (dispatch ready)
+        man-processing  (dispatch (not ready))]
+    (man-processing  status-report "processing")
+    (man-ready       status-report "ready")))
+
+(defn leap-year [year]
+  (or
+   (= 0 (mod year 400))
+   (and (not (= 0 (mod year 100)))
+        (= 0 (mod year 4)))))
+;; if year is divisible by 400 then
+;;    is_leap_year
+;; else if year is divisible by 100 then
+;;    not_leap_year
+;; else if year is divisible by 4 then
+;;    is_leap_year
+;; else
+;;    not_leap_year)
 
 (def c (chan))
 (def c-msg (chan))
@@ -27,22 +48,31 @@
       (<! (timeout 5))
       (<! c-msg)
       (if (= @years-to-fetch 0)
-        (do (report-status "Finished.") (close! c-msg))
-        (report-status (str "Drawing, "(swap! years-to-fetch - 1) " to go "))))))
+        (do (report-status true) (close! c-msg))
+        (report-status false)))))
 
 (defn listen-results-async []
     (go
      (loop [parameters nil]
        (if (not (nil? parameters))
-         (let [{:keys [data errors attribute offset context sorting]} parameters
-               preprocess (if sorting sort identity)]
-           (doseq [[x-coord temperature]
-                   (map list
-                    (range)
-                    (preprocess (map #(.-value %)
+         (let [{:keys [data errors attribute offset context sorting year]} parameters
+               preprocess (if sorting sort identity)
+               days (preprocess (map #(.-value %)
                                      (-> data .-locations (nth 0)
                                          .-data (aget attribute)
-                                         .-timeValuePairs))))]
+                                         .-timeValuePairs)))
+               jan-and-feb (+ 31 28)
+               uniform-days (if (not (leap-year year))
+                              (concat (conj (take jan-and-feb days)
+                                            (get days (- jan-and-feb-days 1)))
+                                      (drop jan-and-feb days))
+                              days)]
+           (if (leap-year year)
+             (.log js/console (str "leap year " year)))
+           (.log js/console (count days))
+           (.log js/console (count uniform-days))
+           (doseq [[x-coord temperature]
+                   (map list (range) uniform-days)]
              (set! (.-fillStyle context)
                    (temperature-to-color temperature gradient/black-white-2))
 
@@ -151,7 +181,7 @@
                                "end"   (make-date (str (+ 1 year)) "01" "01")
                                "callback" (fn [data, errors]
                                             (go
-                                             (async/>! c {:data data :errors errors :attribute quantity :offset (- year from) :context context :sorting sorting})
+                                             (async/>! c {:data data :errors errors :attribute quantity :offset (- year from) :year year :context context :sorting sorting})
                                              (.disconnect connection))))]
           (if (.connect connection url stored-query-id)
             (.getData connection parameters)))))))
