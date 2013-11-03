@@ -133,27 +133,28 @@
     (js/Date. (.valueOf date))))
 
 
-(defn draw-async [canvas from to quantity sorting]
+(defn draw-async [canvas from to location-id quantity sorting]
   (swap! years-to-fetch #(+ 1 (- to from)))
   (init-canvas canvas @years-to-fetch)
   (listen-results-async)
-  (let [context (.getContext canvas "2d")]
+  (if location-id
+    (let [context (.getContext canvas "2d")]
 
-     (doseq [year (range from (+ 1 to))]
-       (let [connection      (js/fi.fmi.metoclient.metolib.WfsConnection.)
-             stored-query-id "fmi::observations::weather::daily::multipointcoverage"
-             url             (format "http://data.fmi.fi/fmi-apikey/%s/wfs" api-key)
-             parameters      (js-obj
-                              "fmisid" 100971 ; helsinki kaisaniemi
-                              "requestParameter" "rrday,tday,snow,tmin,tmax"
-                              "begin" (make-date (str year) "01" "01")
-                              "end"   (make-date (str (+ 1 year)) "01" "01")
-                              "callback" (fn [data, errors]
-                                           (go
-                                            (async/>! c {:data data :errors errors :attribute quantity :offset (- year from) :context context :sorting sorting})
-                                            (.disconnect connection))))]
-         (if (.connect connection url stored-query-id)
-           (.getData connection parameters))))))
+      (doseq [year (range from (+ 1 to))]
+        (let [connection      (js/fi.fmi.metoclient.metolib.WfsConnection.)
+              stored-query-id "fmi::observations::weather::daily::multipointcoverage"
+              url             (format "http://data.fmi.fi/fmi-apikey/%s/wfs" api-key)
+              parameters      (js-obj
+                               "fmisid" location-id ; helsinki kaisaniemi
+                               "requestParameter" "rrday,tday,snow,tmin,tmax"
+                               "begin" (make-date (str year) "01" "01")
+                               "end"   (make-date (str (+ 1 year)) "01" "01")
+                               "callback" (fn [data, errors]
+                                            (go
+                                             (async/>! c {:data data :errors errors :attribute quantity :offset (- year from) :context context :sorting sorting})
+                                             (.disconnect connection))))]
+          (if (.connect connection url stored-query-id)
+            (.getData connection parameters)))))))
 
 (defn draw-async-sheet [canvas from to quantity sorting]
   (let [years (+ 1 (- to from))]

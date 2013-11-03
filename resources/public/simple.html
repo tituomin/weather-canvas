@@ -13,9 +13,43 @@
     <link rel="stylesheet" href="css/base.css"></link>
 </head>
 <body>
-    <br/>
+    <h1>Vuosien kirjo</h1>
+    <p>Valitse sinua kiinnostavat vuodet valikosta ja
+        haluamasi sijainti Suomesta, niin väritän
+        vuosien jokaisen päivän sen mukaan, millainen sää
+        tuolloin oli.</p>
+    <p>Voit katsoa esimerkiksi menneiden ja nykyisten asuinpaikkojesi
+    historialliset säätiedot.</p>
+    <p>Kaikista sijainneista ei ole säämittauksia kaikilta
+        ajanjaksoilta, joten valitsemasi vuodet karsivat
+        valittavissa olevien paikkojen määrää.</p>
     <p id="status-report"></p>
-    <canvas id="test-weather-canvas"></canvas>
+
+    <div class="sequence-wrapper">
+        <div class="form-wrapper"></div>
+
+        <div class="headers-top hidden">
+            <div class="month">tammi</div>
+            <div class="month">helmi</div>
+            <div class="month">maalis</div>
+            <div class="month">huhti</div>
+            <div class="month">touko</div>
+            <div class="month">kesä</div>
+            <div class="month">heinä</div>
+            <div class="month">elo</div>
+            <div class="month">syys</div>
+            <div class="month">loka</div>
+            <div class="month">marras</div>
+            <div class="month">joulu</div>
+        </div>
+
+        <div class="canvas-wrapper"></div>
+        <div class="headers-right">
+            <div class="year">
+        </div>
+    </div>
+    
+
     <!-- pointing to cljsbuild generated js file -->
     <script src="js/weather.js"></script>
 </body>

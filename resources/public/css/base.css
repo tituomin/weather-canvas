@@ -2,6 +2,7 @@
 
 body {
   background-color: #111;
+  margin-left: 40px;
   color: #ddd;
   font-family: Helvetica, Arial, sans-serif;
   font-size: 14px;
@@ -17,10 +18,64 @@ form label {
 
 }
 
+.headers-top {
+  margin-top: 40px;
+  width: 1600px;
+}
+
+.headers-top.hidden {
+  display: none; 
+}
+
+
+.month {
+  float:left;
+  font-size: 10px;
+  width: 100px;
+  padding: 10px 10px 4px 10px;
+  text-transform: uppercase;
+  border-right: 1px solid;
+  border-top: 1px solid;
+}
+
+.form-wrapper {
+  border-top: 1px solid;
+  padding-top: 20px;
+}
+
 form .form-grouping {
   padding: 4px 0;
+  
 }
+
+form input[type="text"] {
+  width: 500px;
+}
+
 form input.submit {
   padding: 0 4px;
   margin: 0 4px;
+}
+
+.ac-renderer {
+  font: normal 13px Arial, sans-serif;
+  position: absolute;
+  background: #333;
+  border: 1px solid #666;
+  -moz-box-shadow: 2px 2px 2px rgba(102, 102, 102, .4);
+  -webkit-box-shadow: 2px 2px 2px rgba(102, 102, 102, .4);
+  width: 300px;
+}
+
+.ac-row {
+  cursor: pointer;
+  padding: .4em;
+}
+
+.ac-highlighted {
+  font-weight: bold;
+}
+
+.ac-active {
+  background-color: #b2b4bf;
 }

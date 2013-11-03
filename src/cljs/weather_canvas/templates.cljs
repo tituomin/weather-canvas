@@ -3,7 +3,7 @@
   (:use-macros
     [dommy.macros :only [node deftemplate]]))
 
-(def years (reverse (range 1950 (+ 1 (.getFullYear (js/Date.))))))
+(def years (reverse (range 1959 (+ 1 (.getFullYear (js/Date.))))))
 
 (defn id-generator [prefix]
   (fn [suffix] (format "%s-%s" prefix suffix)))
@@ -18,7 +18,7 @@
                [:option {:value year} year])]
 
     (node [:div {:class "query-form-container"}
-           [:form {:id id-prefix}
+           [:form {:id id-prefix :autocomplete "off"}
 
 ;            [:span {:class "form-element"}
 ;            [:select {:id (mk-id "focus")}
@@ -28,12 +28,12 @@
 
             (group [
 
-            (with-label "vuodesta" :select (mk-id "year-start")
-              year-options)
-            (with-label "vuoteen" :select (mk-id "year-end")
-              year-options)
+            (with-label "vuodesta" :select (mk-id "year-start") year-options {:class "year" :data-bound "start"}
+              )
+            (with-label "vuoteen" :select (mk-id "year-end") year-options {:class "year" :data-bound "end"}
+              )
             (with-label "paikassa" :input (mk-id "location")
-              nil)
+              nil {:autocomplete "off" :type "text"})
                     ])
 
             (group [
@@ -60,8 +60,8 @@
   [:div {:class "form-grouping"}
    (for [c contents] c)])
 
-(defn with-label [label type id contents]
+(defn with-label [label type id contents & attrs]
   [:span {:class "form-element"}
    [:label {:for id} label]
-   [type {:id id :name id} contents]])
+   [type (merge {:id id :name id} (first attrs)) contents]])
 
