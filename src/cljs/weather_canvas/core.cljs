@@ -40,7 +40,6 @@
             (<! (timeout 100))
             (dm/append! (sel1 [:body :.canvas-wrapper]) canvas)
             (dm/remove-class! (sel1 [:body :.headers-top]) "hidden")
-            (doseq)
             (weather/draw-async
              canvas
              (int (form-contents "year-start"))
