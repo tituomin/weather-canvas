@@ -69,7 +69,7 @@
 
 (def weekday ["su" "ma" "ti" "ke" "to" "pe" "la"])
 (def scale {"tday" "C" "tmax" "C" "tmin" "C" "rrday" "mm" "snow" "cm"})
-(def description {"tday" "keskilämpötila" "tmax" "maksimilämpötila" "tmin" "minimilämpötila" "sademäärä" "mm" "lumensyvyys" "cm"})
+(def description {"tday" "keskilämpötila" "tmax" "maksimilämpötila" "tmin" "minimilämpötila" "rrday" "sademäärä" "snow" "lumensyvyys"})
 
 (defn listen-results-async []
     (go
