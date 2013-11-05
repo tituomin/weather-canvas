@@ -34,6 +34,55 @@ form label {
 
 }
 
+#data {
+  border-top: 1px solid #292929;
+  background-color: #222;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 40px;
+}
+
+#data div
+ {
+  min-width: 25px;
+  float: left;
+}
+
+#data div.unit {
+  padding-left: 5px;
+}
+
+#data div.description {
+  min-width: 100px;
+}
+
+#data div.year {
+  min-width: 50px;
+  padding-left: 5px;
+}
+
+#data div.day,
+#data div.month,
+#data div.value {
+  text-align: right;
+}
+
+#data div.value {
+  min-width: 30px; 
+}
+
+
+#data div.weekday {
+  text-transform: capitalize;
+  width: 50px;
+}
+
+canvas {
+  cursor:crosshair;
+}
+
 .headers-top {
   margin-top: 40px;
 }
@@ -58,7 +107,7 @@ form label {
   font-size: 12px;
 }
 
-.month {
+.headers-top .month {
   float:left;
   font-size: 10px;
   margin-bottom: 1px;

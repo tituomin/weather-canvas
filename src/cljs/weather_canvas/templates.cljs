@@ -46,7 +46,7 @@
             (with-label "vuoteen" :select (mk-id "year-end") year-options-2 {:class "year" :data-bound "end"}
               )
             (with-label "paikassa" :input (mk-id "location")
-              nil {:autocomplete "off" :type "text"})
+              nil {:autocomplete "off" :type "text" :disabled "disabled"})
                     ])
 
             (group [

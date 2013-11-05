@@ -9,18 +9,12 @@
    [cljs.core.async :as async
     :refer [<! >! >!! chan close! sliding-buffer put! alts! timeout]]
    [dommy.core :as dm])
-  (:use     [weather-canvas.canvas-buffer :only [init-canvas size-x size-y]])
+  (:use     [weather-canvas.canvas-buffer :only [init-canvas size-x size-y]]
+            [weather-canvas.events :only [listen]])
   (:use-macros
    [dommy.macros :only [node sel sel1]])
   (:require-macros [cljs.core.async.macros :as m :refer [go alt!]]))
 
-(defn listen [el type]
-  (let [c (chan)]
-    (dm/listen!
-     el type (fn [ev]
-               (.preventDefault ev) (.stopPropagation ev)
-               (put! c ev)))
-    c))
 
 (def days-in-month
   ; month zero indexed
@@ -114,6 +108,7 @@
                           :let [id (dm/attr el :id)]
                           :when (not (nil? id))]
                       [(strip-prefix id) (dm/value el)])))))
+
 
 
 (init-ui)
