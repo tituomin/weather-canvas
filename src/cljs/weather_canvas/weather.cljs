@@ -78,6 +78,7 @@
        (if (and (not (nil? parameters)) (not (nil? (-> (:data parameters) .-locations (nth 0)))))
          (let [{:keys [data errors attribute offset context sorting year]} parameters
                preprocess (if sorting sort identity)
+               preprocess-data (if sorting #(sort-by :value %) identity)
                data-seq (-> data .-locations (nth 0) .-data
                             (aget attribute) .-timeValuePairs)
 
@@ -90,7 +91,7 @@
 
                uniform-days (preprocess (map #(.-value %) uniform-data-seq))]
            (swap! year-data #(assoc % offset
-                                    (apply vector (for [el uniform-data-seq]
+                                    (apply vector (preprocess-data (for [el uniform-data-seq]
                                                     (let [date (js/Date. (.-time el))]
                                                       {:day (.getDate date)
                                                        :weekday (weekday (.getDay date))
@@ -98,7 +99,7 @@
                                                        :year (.getFullYear date)
                                                        :unit (scale attribute)
                                                        :description (description attribute)
-                                                       :value (.-value el)})))))
+                                                       :value (.-value el)}))))))
 
            (doseq [[x-coord temperature]
                    (map list (range) uniform-days)]
