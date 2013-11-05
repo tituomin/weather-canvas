@@ -9,10 +9,20 @@ body {
 }
 
 
+p.error {
+  font-size: 150%;
+  color: red; 
+  font-weight: bold;
+}
+
+.sequence-wrapper {
+  width: 1150px; 
+}
+
 #status-report {
   color: #ffffff;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
 }
 
 #status-report.processing {
