@@ -70,6 +70,11 @@
 (def weekday ["su" "ma" "ti" "ke" "to" "pe" "la"])
 (def scale {"tday" "C" "tmax" "C" "tmin" "C" "rrday" "mm" "snow" "cm"})
 (def description {"tday" "keskilämpötila" "tmax" "maksimilämpötila" "tmin" "minimilämpötila" "rrday" "sademäärä" "snow" "lumensyvyys"})
+(def grad {"tday" gradient/temperature
+               "tmax" gradient/temperature
+               "tmin" gradient/temperature
+               "rrday" gradient/rain
+               "snow" gradient/snow})
 
 (defn listen-results-async []
     (go
@@ -105,7 +110,7 @@
                    (map list (range) uniform-days)]
 
              (set! (.-fillStyle context)
-                   (temperature-to-color temperature gradient/black-white-2))
+                   (temperature-to-color temperature (grad attribute)))
              (.fillRect context 
                         (* size-x x-coord) (* size-y offset)
                         size-x             size-y))))

@@ -1,21 +1,6 @@
 (ns weather-canvas.gradient)
 
-(def a
-  {:direction :up
-   :colors
-   [{:range [0    500]
-     :from  '(0x00 0x00 0x00)
-     :to    '(0x3a 0x00 0x00)}
-
-   {:range  [500  750]
-     :from  '(0x00 0x3a 0x00)
-     :to    '(0x3a 0x3a 0x00)}
-
-    {:range [750 1000]
-     :from  '(0x3a 0x3a 0x00)
-     :to    '(0xff 0xff 0xff)}]})
-
-(def black-white-2
+(def temperature
   {:direction :up
    :colors
    [
@@ -37,25 +22,34 @@
     ]}
 )
 
-
-(def black-white
+(def rain
   {:direction :up
    :colors
    [
-    {:range [-100    -50]
-     :from  '(0xff 0xff 0xff)
-     :to    '(0xff 0xff 0xff)}
+    {:range [-1    0]
+     :from  '(0x11 0x11 0x11)
+     :to    '(0x11 0x11 0x11)}
 
-    {:range [-50    0]
-     :from  '(0xff 0xff 0xff)
-     :to    '(0x88 0x88 0xff)}
+    {:range [0    200]
+     :from  '(0x22 0x22 0x44)
+     :to    '(0xee 0xee 0xff)}
 
-    {:range [0    15]
-     :from  '(0xff 0xff 0xff)
-     :to    '(0xff 0xff 0x66)}
-    
-    {:range [15    30]
-     :from  '(0xff 0xff 0x66)
-     :to    '(0xff 0x00 0x00)}
     ]}
 )
+
+(def snow
+  {:direction :up
+   :colors
+   [
+    {:range [-1    0]
+     :from  '(0x11 0x11 0x11)
+     :to    '(0x11 0x11 0x11)}
+
+    {:range [0    130]
+     :from  '(0x3f 0x3e 0x55)
+     :to    '(0xee 0xee 0xff)}
+    ]}
+)
+
+
+
