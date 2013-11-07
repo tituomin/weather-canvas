@@ -95,9 +95,9 @@
                first-date (.getTime (js/Date. (str year "-01-01T00:00:00Z")))
                data-seq 
                (filled 
-                (-> data .-locations (nth 0) .-data
-                    (aget attribute) .-timeValuePairs)
-                (map #(+ first-date (* % 1000 60 60 24)) (range 0 (if (leap-year? year) 366 365)))
+                (apply vector (-> data .-locations (nth 0) .-data
+                    (aget attribute) .-timeValuePairs))
+                (apply vector (map #(+ first-date (* % 1000 60 60 24)) (range 0 (if (leap-year? year) 366 365))))
                 (fn [got exp] (and
                                (not (nil? got))
                                (= (.-time got) exp)))
