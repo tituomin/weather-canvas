@@ -40,22 +40,18 @@
         (listen submit-form :submit)
 
         years-channel
-        (listen [submit-form :.year] :change)
-        
-        canvas
-        (node [:canvas {:id "weather-canvas"}])
-        ]
+        (listen [submit-form :.year] :change)]
     (go (while true
           (let [ev (<! submit-channel)
                 form-contents (handle-form (.-target ev))
                 year-start              (int (form-contents "year-start"))
                 year-end             (int (form-contents "year-end"))
+                canvas               (node [:canvas {:id "weather-canvas"}])
                 top-headers (sel1 [:body :.headers-top])]
             (<! (timeout 100))
-            (dm/append! (sel1 [:body :.canvas-wrapper]) canvas)
+            (dm/replace-contents! (sel1 [:body :.canvas-wrapper]) canvas)
 
             (doseq [[month width] (map list (sel top-headers :.month) days-in-month)]
-;              (.log js/console m)
               (dm/set-attr! month :style (format "width: %spx;" (- (* size-x width) 21))))
 
             (dm/remove-class! top-headers "hidden")

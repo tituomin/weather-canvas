@@ -33,7 +33,7 @@
                  [:div {:class "unit"} (:unit d)]])
         (node [:div {:id "data"}]))))
 
-(defn init-cursor-listener [canvas]
+(defn init-cursor-listener! [canvas]
   (let [cc (listen canvas :mousemove)]
     (go (while true
           (let [e (<! cc)
@@ -43,16 +43,15 @@
             (dm/replace! (sel1 :#data) (value-at-point x y)))))))
 
 (defn report-status [ready]
-  (let [status-report (sel1 :#status-report)
-        dispatch        #(if % dm/add-class! dm/remove-class!)
-        man-ready       (dispatch ready)
-        man-processing  (dispatch (not ready))]
-    (man-processing  status-report "processing")
-    (man-ready       status-report "ready")
+  (let [status-report (sel1 :#status-report)]
     (if ready
-      (init-cursor-listener (sel1 :#weather-canvas)))))
+      (do
+        (dm/remove-class! status-report "processing")
+        (dm/add-class! status-report "ready")
+        (init-cursor-listener! (sel1 :#weather-canvas))
+        (reset! years-to-fetch 0)))))
 
-(defn leap-year [year]
+(defn leap-year? [year]
   (or
    (= 0 (mod year 400))
    (and (not (= 0 (mod year 100)))
@@ -64,8 +63,17 @@
 (go (while true
     (do
       (<! (timeout 10))
-      (<! c-msg)
-      (report-status (<= @years-to-fetch 0)))))
+      (if (<! c-msg)
+        (report-status (< @years-to-fetch 0))))))
+
+(defn filled [data expected predicate filler]
+  (if (empty? expected)
+    []
+    (if (= (count data) (count expected))
+      data
+      (if (predicate (first data) (first expected))
+        (cons (first data) (lazy-seq (filled (rest data) (rest expected) predicate filler)))
+        (cons (filler (first expected)) (lazy-seq (filled data (rest expected) predicate filler)))))))
 
 (def weekday ["su" "ma" "ti" "ke" "to" "pe" "la"])
 (def scale {"tday" "C" "tmax" "C" "tmin" "C" "rrday" "mm" "snow" "cm"})
@@ -84,11 +92,23 @@
          (let [{:keys [data errors attribute offset context sorting year]} parameters
                preprocess (if sorting sort identity)
                preprocess-data (if sorting #(sort-by :value %) identity)
-               data-seq (-> data .-locations (nth 0) .-data
-                            (aget attribute) .-timeValuePairs)
+               first-date (.getTime (js/Date. (str year "-01-01T00:00:00Z")))
+               data-seq 
+               (filled 
+                (-> data .-locations (nth 0) .-data
+                    (aget attribute) .-timeValuePairs)
+                (map #(+ first-date (* % 1000 60 60 24)) (range 0 (if (leap-year? year) 366 365)))
+                (fn [got exp] (and
+                               (not (nil? got))
+                               (= (.-time got) exp)))
+                (fn [d]
+                  (let [obj (js/Object.)]
+                    (set! (.-time obj) d)
+                    (set! (.-value obj) :missing)
+                    obj)))
 
                jan-and-feb (+ 31 28)
-               uniform-data-seq (if (not (leap-year year))
+               uniform-data-seq (if (not (leap-year? year))
                               (concat (concat (take jan-and-feb data-seq)
                                               [(nth data-seq (- jan-and-feb 1))])
                                       (drop jan-and-feb data-seq))
@@ -97,23 +117,27 @@
                uniform-days (preprocess (map #(.-value %) uniform-data-seq))]
            (swap! year-data #(assoc % offset
                                     (apply vector (preprocess-data (for [el uniform-data-seq]
-                                                    (let [date (js/Date. (.-time el))]
+                                                    (let [date (js/Date. (.-time el))
+                                                          value (if (js/isNaN (.-value el))
+                                                                  :missing (.-value el))]
                                                       {:day (.getDate date)
                                                        :weekday (weekday (.getDay date))
                                                        :month (+ 1 (.getMonth date))
                                                        :year (.getFullYear date)
-                                                       :unit (scale attribute)
+                                                       :unit (if (= :missing value) "" (scale attribute))
                                                        :description (description attribute)
-                                                       :value (.-value el)}))))))
+                                                       :value (if (= :missing value) "mittaus puuttuu" value)}))))))
 
            (doseq [[x-coord temperature]
                    (map list (range) uniform-days)]
 
-             (set! (.-fillStyle context)
-                   (temperature-to-color temperature (grad attribute)))
-             (.fillRect context 
-                        (* size-x x-coord) (* size-y offset)
-                        size-x             size-y))))
+             (if (not (or (= :missing temperature) (js/isNaN temperature)))
+               (do (set! (.-fillStyle context)
+                         (temperature-to-color temperature (grad attribute)))
+                   (.fillRect context 
+                              (* size-x x-coord) (* size-y offset)
+                              size-x             size-y))))))
+
        (>! c-msg "done")
        (<! (timeout 10))
        (recur (<! c)))
@@ -203,6 +227,8 @@
   (init-canvas canvas @years-to-fetch)
   (reset! year-data (apply vector (repeat @years-to-fetch [])))
   (listen-results-async)
+  (dm/add-class! (sel1 :#status-report) "processing")
+
   (if location-id
     (let [context (.getContext canvas "2d")]
       (doseq [year (range from (+ 1 to))]
