@@ -229,8 +229,8 @@
   (listen-results-async)
 
   (if location-id
-    (dm/add-class! (sel1 :#status-report) "processing")
     (let [context (.getContext canvas "2d")]
+      (dm/add-class! (sel1 :#status-report) "processing")
       (doseq [year (range from (+ 1 to))]
         (let [connection      (js/fi.fmi.metoclient.metolib.WfsConnection.)
               stored-query-id "fmi::observations::weather::daily::multipointcoverage"
