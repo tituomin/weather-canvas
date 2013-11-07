@@ -227,9 +227,9 @@
   (init-canvas canvas @years-to-fetch)
   (reset! year-data (apply vector (repeat @years-to-fetch [])))
   (listen-results-async)
-  (dm/add-class! (sel1 :#status-report) "processing")
 
   (if location-id
+    (dm/add-class! (sel1 :#status-report) "processing")
     (let [context (.getContext canvas "2d")]
       (doseq [year (range from (+ 1 to))]
         (let [connection      (js/fi.fmi.metoclient.metolib.WfsConnection.)
