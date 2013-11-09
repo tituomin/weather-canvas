@@ -5837,5 +5837,8 @@
    ]
   )
 
-(def name-to-id
-  (apply hash-map (flatten (map (juxt :title :id) metadata))))
+(def name-to-record
+  (apply hash-map (flatten (map (fn [el] [(:title el) {:id (:id el) :start (:start el) :end (:end el)}]) metadata))))
+
+(defn name-to-id [name]
+  (:id (name-to-record name)))
