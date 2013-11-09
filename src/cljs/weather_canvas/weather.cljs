@@ -84,14 +84,22 @@
                "rrday" gradient/rain
                "snow" gradient/snow})
 
+(defn key-a [el]
+  (if (or (= :missing el) (js/isNaN el))
+    nil
+    el))
+
+(defn key-b [el]
+  (key-a (:value el)))
+
 (defn listen-results-async []
     (go
      (loop [parameters nil]
        (swap! years-to-fetch #(- % 1))
        (if (and (not (nil? parameters)) (not (nil? (-> (:data parameters) .-locations (nth 0)))))
          (let [{:keys [data errors attribute offset context sorting year]} parameters
-               preprocess (if sorting sort identity)
-               preprocess-data (if sorting #(sort-by :value %) identity)
+               preprocess (if sorting (partial sort-by key-a) identity)
+               preprocess-data (if sorting (partial sort-by key-b) identity)
                first-date (.getTime (js/Date. (str year "-01-01T00:00:00Z")))
                data-seq 
                (filled 
