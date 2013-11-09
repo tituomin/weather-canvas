@@ -82,18 +82,25 @@
 
                   filtered
                   (drop-while #(<= (:end %1) end)
-                              (sort-by :end subseq))]
+                              (sort-by :end subseq))
 
-              (init-location-autocomplete filtered))
+                  old-location-name (.-value (sel1 :#query-form-1-location))
+                  old-location (obspoints/name-to-record old-location-name)]
+
+              (init-location-autocomplete filtered
+                                          (if (and (<= (:start old-location) start)
+                                                   (>= (:end old-location) end))
+                                            old-location-name
+                                            "")))
 
             (<! (timeout 100)))))))
 
 (defn indices [pred coll]
    (keep-indexed #(when (pred %2) %1) coll))
 
-(defn init-location-autocomplete [points]
+(defn init-location-autocomplete [points default-value]
   (let [a (apply array (map :title points))]
-    (dm/replace! (sel1 :#query-form-1-location) (node [:input {:id "query-form-1-location" :name "query-form-1-location" :autocomplete "off" :type "text"} ]))
+    (dm/replace! (sel1 :#query-form-1-location) (node [:input {:id "query-form-1-location" :name "query-form-1-location" :autocomplete "off" :type "text" :value default-value} ]))
     (.createSimpleAutoComplete js/goog.ui.ac a (sel1 :#query-form-1-location) false)))
 
 (defn handle-form [form]
