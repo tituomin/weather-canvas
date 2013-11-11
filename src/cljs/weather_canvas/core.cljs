@@ -81,7 +81,7 @@
                               (sort-by :start obspoints/metadata))
 
                   filtered
-                  (drop-while #(<= (:end %1) end)
+                  (drop-while #(< (:end %1) end)
                               (sort-by :end subseq))
 
                   old-location-name (.-value (sel1 :#query-form-1-location))
