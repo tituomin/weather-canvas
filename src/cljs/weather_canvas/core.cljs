@@ -44,17 +44,18 @@
     (go (while true
           (let [ev (<! submit-channel)
                 form-contents (handle-form (.-target ev))
-                year-start              (int (form-contents "year-start"))
-                year-end             (int (form-contents "year-end"))
-                canvas               (node [:canvas {:id "weather-canvas"}])
-                top-headers (sel1 [:body :.headers-top])]
+                year-start    (int (form-contents "year-start"))
+                year-end      (int (form-contents "year-end"))
+                canvas        (node [:canvas {:id "weather-canvas"}])
+                sort-by       (form-contents "order")
+                top-headers   (sel1 [:body :.headers-top])]
             (<! (timeout 100))
             (dm/replace-contents! (sel1 [:body :.canvas-wrapper]) canvas)
 
             (doseq [[month width] (map list (sel top-headers :.month) days-in-month)]
               (dm/set-attr! month :style (format "width: %spx;" (- (* size-x width) 21))))
 
-            (dm/remove-class! top-headers "hidden")
+            (dm/toggle-class! top-headers "hidden" (= sort-by "value"))
             (let [headers-right (sel1 :.headers-right)]
               (dm/replace-contents! headers-right (node [:div]))
               (doseq [year (range year-start (+ 1 year-end))]
@@ -66,7 +67,7 @@
              (if (< year-end year-start) year-start year-end)
              (obspoints/name-to-id (form-contents "location"))
              (form-contents "quantity")
-             (= "value" (form-contents "order"))))))
+             (= "value" sort-by)))))
 
     (go (while true
           (let [ev (<! years-channel)
