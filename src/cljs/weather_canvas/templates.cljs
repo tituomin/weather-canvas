@@ -15,7 +15,7 @@
       [id-prefix (format "query-form-%d" sequence-no)
        mk-id     (id-generator id-prefix)
        year-options-2 (for [year years]
-                      (if (= 2020 year)
+                      (if (= (.getFullYear (js/Date.)) year)
                         [:option {:value year :selected "selected"} year]
                         [:option {:value year} year]
 
