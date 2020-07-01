@@ -12,8 +12,6 @@
    [dommy.macros :only [node sel sel1]])
   (:require-macros [cljs.core.async.macros :as m :refer [go alt!]]))
 
-(def api-key "9f1313c1-c123-40ad-9490-f25428b14bcf")
-
 (def year-data      (atom []))
 (def years-to-fetch (atom 0))
 
@@ -151,29 +149,6 @@
        (recur (<! c)))
      (>! c-msg "done")))
 
-;; (defn listen-results-async-sheet []
-;;     (go
-;;      (loop [parameters nil]
-;;        (if (not (nil? parameters))
-;;          (let [{:keys [data errors attribute offset context sorting]} parameters
-;;                preprocess (if sorting sort identity)]
-;;            (swap! main-group assoc-in
-;;                   [:content offset]
-;;                   (group :right :interleave (gap 1)
-;;                          :content
-;;                          (for [temperature
-;;                                (preprocess (map #(.-value %)
-;;                                                 (-> data
-;;                                                     .-locations (nth 0)
-;;                                                     .-data (aget attribute)
-;;                                                     .-timeValuePairs)))]
-;;                            (square 2 (temperature-to-color
-;;                                       temperature
-;;                                       gradient/black-white-2)))))))
-
-;;        (>! c-msg "done")
-;;        (<! (timeout 10))
-;;        (recur (<! c)))))
 
 (defn listen-results-async-fake []
     (go
@@ -242,7 +217,7 @@
       (doseq [year (range from (+ 1 to))]
         (let [connection      (js/fi.fmi.metoclient.metolib.WfsConnection.)
               stored-query-id "fmi::observations::weather::daily::multipointcoverage"
-              url             (format "http://data.fmi.fi/fmi-apikey/%s/wfs" api-key)
+              url             "https://opendata.fmi.fi/wfs"
               parameters      (js-obj
                                "fmisid" location-id ; helsinki kaisaniemi
                                "requestParameter" "rrday,tday,snow,tmin,tmax"
@@ -256,30 +231,4 @@
 ))]
           (if (.connect connection url stored-query-id)
             (.getData connection parameters)))))))
-
-;; (defn draw-async-sheet [canvas from to quantity sorting]
-;;   (let [years (+ 1 (- to from))]
-;;     (.log js/console years)
-;;     (reset! years-to-fetch years)
-;;     (reset! main-group 
-;;             (group :down :interleave (gap 1)
-;;                    :content (apply vector (take years
-;;                                   (repeat (square size-y "#666666"))))))
-  
-;;     (listen-results-async-sheet)
-;;     (doseq [year (range from (+ 1 to))]
-;;       (let [connection      (js/fi.fmi.metoclient.metolib.WfsConnection.)
-;;             stored-query-id "fmi::observations::weather::daily::multipointcoverage"
-;;             url             (format "http://data.fmi.fi/fmi-apikey/%s/wfs" api-key)
-;;             parameters      (js-obj
-;;                              "fmisid" 100971 ; helsinki kaisaniemi
-;;                              "requestParameter" "rrday,tday,snow,tmin,tmax"
-;;                              "begin" (make-date (str year) "01" "01")
-;;                              "end"   (make-date (str year) "12" "31")
-;;                              "callback" (fn [data, errors]
-;;                                           (go
-;;                                            (async/>! c {:data data :errors errors :attribute quantity :offset (- year from) :context nil :sorting sorting})
-;;                                            (.disconnect connection))))]
-;;         (if (.connect connection url stored-query-id)
-;;           (.getData connection parameters))))))
 
