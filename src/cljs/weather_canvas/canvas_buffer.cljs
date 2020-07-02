@@ -1,6 +1,5 @@
 (ns weather-canvas.canvas-buffer
-  (:use-macros
-   [dommy.macros :only [node sel sel1]]))
+  (:require [dommy.core :refer-macros [sel1]]))
 
 (def size-x 3)
 (def size-y 16)

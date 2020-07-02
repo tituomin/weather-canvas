@@ -3,9 +3,7 @@
   (:require [weather-canvas.gradient :as gradients]
             [weather-canvas.canvas-buffer :as cb]
             [dommy.utils :as utils]
-            [dommy.core :as dommy])
-  (:use-macros
-   [dommy.macros :only [node sel sel1]]))
+            [dommy.core :as dommy :refer-macros [sel sel1]]))
 
 ; ----------------------------------------------------------------------
 
