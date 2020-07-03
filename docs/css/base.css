@@ -8,20 +8,6 @@ body {
   font-size: 14px;
 }
 
-a {
-  text-decoration: none;
-  color: #eee;
-  font-weight: bold;
-}
-
-p.notice {
-  color: #da8;
-}
-
-a:hover {
-  color: #fff;
-  text-decoration: underline;
-}
 
 p.error {
   font-size: 150%;

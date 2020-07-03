@@ -25,11 +25,11 @@
               {
                :dev
                {;; CLJS source code path
-                :source-paths ["test/cljs" "src/cljs" "data/cljs" "resources/public"]
+                :source-paths ["test/cljs" "src/cljs" "data/cljs" "docs"]
 
                 ;; Google Closure (CLS) options configuration
                 :compiler {;; CLS generated JS script filename
-                           :output-to "resources/public/js/weather.js"
+                           :output-to "docs/js/weather.js"
 
                            ;; minimal JS optimization directive
                            :optimizations :whitespace
