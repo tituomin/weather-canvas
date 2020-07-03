@@ -3,7 +3,7 @@
             [goog.string :as gstring]
             [goog.string.format]))
 
-(def years (reverse (range 1959 (+ 1 (.getFullYear (js/Date.))))))
+(def years (reverse (range 1844 (+ 1 (.getFullYear (js/Date.))))))
 
 (defn id-generator [prefix]
   (fn [suffix] (gstring/format "%s-%s" prefix suffix)))

@@ -332,9 +332,9 @@
   :lat [62.33344 62.3337],
   :lon [21.17965 21.1904],
   :id 101256}
- {:start 1959,
+ {:start 1844,
   :end 10000,
-  :title "Helsinki Kaisaniemi 1959-",
+  :title "Helsinki Kaisaniemi 1844-",
   :lat [60.17518 60.17528],
   :lon [24.94454 24.94464],
   :id 100971}
@@ -362,9 +362,9 @@
   :lat [67.96934 67.96944],
   :lon [23.67164 23.67174],
   :id 101969}
- {:start 1959,
+ {:start 1908,
   :end 10000,
-  :title "Sodankylä Lapin ilmatieteellinen tutkimuskeskus 1959-",
+  :title "Sodankylä Lapin ilmatieteellinen tutkimuskeskus 1908-",
   :lat [67.36658 67.37974],
   :lon [26.62868 26.646],
   :id 101932}
